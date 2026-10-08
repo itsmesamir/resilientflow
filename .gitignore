@@ -1,0 +1,25 @@
+# binaries
+/bin/
+*.test
+*.out
+
+# benchmark scratch; committed results live in benchmark/results
+/benchmark/results/scratch/
+
+# local env
+.env
+*.local.yml
+
+# editor
+.idea/
+.vscode/
+.DS_Store
+
+# working notes — not part of the published project
+/resilientflow_master_build_guide.md
+/docs/applications.md
+/docs/technologies.md
+/docs/learning-notes.md
+/docs/experiment-log.md
+/docs/related-work.md
+/notes/

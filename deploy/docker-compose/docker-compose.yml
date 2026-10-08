@@ -1,0 +1,41 @@
+name: resilientflow
+
+# Phase 0-2: Postgres only. Coordinator, workers, tool simulator and the
+# observability stack are added in later phases.
+#
+# The Postgres version is pinned deliberately. Benchmark results must record
+# the exact engine version (see docs/design-decisions.md, ADR-006), so a
+# floating tag would make runs non-reproducible.
+
+services:
+  postgres:
+    image: postgres:17.7-alpine
+    container_name: rf-postgres
+    environment:
+      POSTGRES_USER: resilientflow
+      POSTGRES_PASSWORD: resilientflow
+      POSTGRES_DB: resilientflow
+      # Deterministic collation so ORDER BY results do not drift between hosts.
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    ports:
+      - "5433:5432"   # 5433 on the host: leaves a local Homebrew Postgres alone
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resilientflow -d resilientflow"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    command:
+      # Louder logging than the default: we want to see the lock waits and
+      # serialization failures that the fencing and outbox phases produce.
+      - "postgres"
+      - "-c"
+      - "log_statement=none"
+      - "-c"
+      - "log_lock_waits=on"
+      - "-c"
+      - "deadlock_timeout=200ms"
+
+volumes:
+  pgdata:
